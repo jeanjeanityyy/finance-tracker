@@ -22,7 +22,7 @@
 
         body {
             font-family: 'Kanit', sans-serif;
-            font-weight: 400; /* Data defaults to Regular */
+            font-weight: 400;
             background: radial-gradient(circle at top right, #1e293b, #0b0f1a);
             color: var(--text);
             padding: 15px;
@@ -30,7 +30,6 @@
             min-height: 100vh;
         }
 
-        /* Bold Highlights for Structural Elements */
         h2, h3, .header-bar, .nav-btn, .btn-glass-add, th, .pill.active, #table-month-indicator, .stat-item small {
             font-weight: 600; 
         }
@@ -144,7 +143,7 @@
             <div class="stat-item"><h2 id="total-spent">₱0</h2><small>Spent</small></div>
             <div class="stat-item"><h2 id="total-trans">0</h2><small>Count</small></div>
             <div class="stat-item"><h2 id="daily-avg">₱0</h2><small>Daily Avg</small></div>
-            <div class="stat-item" style="grid-column: span 2;"><h2 id="top-cat">-</h2><small>Installments</small></div>
+            <div class="stat-item" style="grid-column: span 2; border-color: var(--accent);"><h2 id="total-savings-dash">₱0</h2><small>Total Savings</small></div>
         </div>
         <div class="glass-card"><div style="height:220px;"><canvas id="monthlyChart"></canvas></div></div>
     </div>
@@ -168,20 +167,30 @@
     </div>
 
     <div id="savings" class="section">
-        <button class="btn-glass-add" style="margin-bottom:20px;" onclick="openModal('savingsModal')">+ New Goal</button>
+        <button class="btn-glass-add" style="margin-bottom:20px;" onclick="prepareSavingsModal()">+ New Goal</button>
         <div class="glass-card table-wrap"><table id="savingsTable"><thead><tr><th>ID</th><th>Goal</th><th>Target</th><th>Current</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+    
     <div id="expenseModal" class="modal"><h3>Add Expense</h3><input type="text" id="exp-item" placeholder="Item"><input type="number" id="exp-amt" placeholder="Amount"><select id="exp-cat" class="category-dropdown"></select><button class="btn-glass-add" onclick="submitEntry('Daily Tracker', ['exp-item','exp-amt','exp-cat'])">Save</button></div>
+    
     <div id="salaryModal" class="modal"><h3>Add Salary</h3><input type="text" id="sal-source" placeholder="Source"><input type="number" id="sal-amt" placeholder="Amount"><button class="btn-glass-add" onclick="submitEntry('Salary', ['sal-source','sal-amt'])">Save</button></div>
+    
     <div id="instModal" class="modal"><h3>New Plan</h3><input type="text" id="ins-prod" placeholder="Product"><input type="number" id="ins-total" placeholder="Total"><input type="number" id="ins-month" placeholder="Monthly"><input type="number" id="ins-rem" placeholder="Remaining"><input type="text" id="ins-due" placeholder="Due Date"><button class="btn-glass-add" onclick="submitEntry('Installments', ['ins-prod','ins-total','ins-month','ins-rem','ins-due'])">Save Plan</button></div>
-    <div id="savingsModal" class="modal"><h3>New Goal</h3><input type="text" id="sav-goal" placeholder="Goal"><input type="number" id="sav-target" placeholder="Target"><input type="number" id="sav-current" placeholder="Current"><button class="btn-glass-add" onclick="submitEntry('Savings', ['sav-goal','sav-target','sav-current'])">Save Goal</button></div>
+    
+    <div id="savingsModal" class="modal">
+        <h3 id="sav-title">New Goal</h3>
+        <input type="hidden" id="sav-id">
+        <input type="text" id="sav-goal" placeholder="Goal">
+        <input type="number" id="sav-target" placeholder="Target">
+        <input type="number" id="sav-current" placeholder="Current">
+        <button id="sav-btn" class="btn-glass-add" onclick="submitEntry('Savings', ['sav-goal','sav-target','sav-current'], document.getElementById('sav-id').value)">Save Goal</button>
+    </div>
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdb_CQHcB9RI8tW6XQHlHQT7GGp_9FkAHzlwCg1Vhw1K7PvUOdbyA8lhFn-fpoIaQ/exec';
         let state = { expenses: [], salary: [], savings: [], installments: [] };
-        // FORCE REAL-TIME MONTH
         let selectedMonth = new Date().toLocaleString('default', { month: 'long' });
         let myChart = null;
 
@@ -208,10 +217,34 @@
         function renderTable(tableId, data, sheetName) {
             const tbody = document.querySelector(`#${tableId} tbody`);
             tbody.innerHTML = data.map(item => {
-                if(!item.id || item.values[0] === 'Product') return '';
+                if(!item.id || item.values[0] === 'Product' || item.values[0] === 'Goal') return '';
+                
+                let editBtn = '';
+                if(sheetName === 'Savings') {
+                    editBtn = `<button onclick="editSavings('${item.id}', '${item.values[0]}', '${item.values[1]}', '${item.values[2]}')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:1.1rem; margin-right:10px;">✏️</button>`;
+                }
+
                 const cells = item.values.map(v => `<td>${(typeof v === 'string' && v.includes('T')) ? v.split('T')[0] : v || ''}</td>`).join('');
-                return `<tr><td>${item.id}</td>${cells}<td><button onclick="deleteEntry('${sheetName}', '${item.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:1.1rem;">❌</button></td></tr>`;
+                return `<tr><td>${item.id}</td>${cells}<td>${editBtn}<button onclick="deleteEntry('${sheetName}', '${item.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:1.1rem;">❌</button></td></tr>`;
             }).join('');
+        }
+
+        function prepareSavingsModal() {
+            document.getElementById('sav-title').innerText = "New Goal";
+            document.getElementById('sav-id').value = "";
+            document.getElementById('sav-goal').value = "";
+            document.getElementById('sav-target').value = "";
+            document.getElementById('sav-current').value = "";
+            openModal('savingsModal');
+        }
+
+        function editSavings(id, goal, target, current) {
+            document.getElementById('sav-title').innerText = "Edit Goal";
+            document.getElementById('sav-id').value = id;
+            document.getElementById('sav-goal').value = goal;
+            document.getElementById('sav-target').value = target;
+            document.getElementById('sav-current').value = current;
+            openModal('savingsModal');
         }
 
         function renderPills() {
@@ -227,13 +260,16 @@
         function changeMonth(m) { selectedMonth = m; renderPills(); updateDashboardUI(); renderAll(); }
 
         function updateDashboardUI() {
-            let totalSpent = 0, trans = 0, totalSalary = 0;
+            let totalSpent = 0, trans = 0, totalSalary = 0, totalSavings = 0;
             state.salary.forEach(s => { if(new Date(s.values[2]).toLocaleString('default', { month: 'long' }) === selectedMonth) totalSalary += parseFloat(s.values[1]) || 0; });
             state.expenses.forEach(e => { if (e.values[4] === selectedMonth) { totalSpent += parseFloat(e.values[1]) || 0; trans++; } });
+            state.savings.forEach(sv => { if(sv.values[2]) totalSavings += parseFloat(sv.values[2]) || 0; });
+
             document.getElementById('total-salary').innerText = `₱${totalSalary.toLocaleString()}`;
             document.getElementById('total-spent').innerText = `₱${totalSpent.toLocaleString()}`;
             document.getElementById('total-trans').innerText = trans;
             document.getElementById('daily-avg').innerText = `₱${(totalSpent/30).toFixed(0)}`;
+            document.getElementById('total-savings-dash').innerText = `₱${totalSavings.toLocaleString()}`;
             renderChart();
         }
 
@@ -246,23 +282,37 @@
             renderTable('instTable', state.installments, 'Installments');
         }
 
-        // Rest of support functions (submitEntry, deleteEntry, etc) same as previous
-        async function submitEntry(sheet, fields) {
-            const btn = event.target; btn.innerText = "Saving...";
-            const data = fields.map(id => document.getElementById(id).value);
+        async function submitEntry(sheet, fields, id = null) {
+            const btn = event.target; 
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            
+            const data = fields.map(fid => document.getElementById(fid).value);
             const now = new Date();
             let finalData = [];
+            
             if (sheet === 'Daily Tracker') finalData = [data[0], data[1], now.toISOString().split('T')[0], data[2], now.toLocaleString('default', { month: 'long' })];
             else if (sheet === 'Salary') finalData = [data[0], data[1], now.toLocaleDateString()];
             else if (sheet === 'Savings') finalData = [data[0], data[1], data[2], now.toLocaleDateString()];
             else finalData = data;
-            await fetch(`${SCRIPT_URL}?action=addEntry&sheet=${sheet}&data=${encodeURIComponent(JSON.stringify(finalData))}`);
-            location.reload();
+
+            let action = id ? 'updateEntry' : 'addEntry';
+            let url = `${SCRIPT_URL}?action=${action}&sheet=${sheet}&data=${encodeURIComponent(JSON.stringify(finalData))}`;
+            if(id) url += `&id=${id}`;
+
+            try {
+                await fetch(url);
+                location.reload();
+            } catch(e) {
+                btn.innerText = originalText;
+                alert("Error saving data.");
+            }
         }
 
         async function deleteEntry(sheet, id) { if (confirm('Delete?')) { await fetch(`${SCRIPT_URL}?action=deleteEntry&sheet=${sheet}&id=${id}`); location.reload(); } }
         function openModal(id) { document.getElementById(id).classList.add('active'); document.getElementById('overlay').classList.add('active'); }
         function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
+        
         function updateDropdowns() {
             const dropdowns = document.querySelectorAll('.category-dropdown');
             const defaults = ["Food & Diet", "Household Bills", "Others"];
@@ -272,6 +322,7 @@
             instList.forEach(p => html += `<option value="${p}">${p}</option>`);
             dropdowns.forEach(d => d.innerHTML = html);
         }
+
         function renderChart() {
             const ctx = document.getElementById('monthlyChart').getContext('2d');
             const months = ["January", "February", "March", "April", "May", "June"];
