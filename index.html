@@ -4,23 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finance Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg: #0b0f1a;
-            --glass: rgba(30, 41, 59, 0.7);
-            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(15, 23, 42, 0.4); 
+            --glass-header: rgba(49, 46, 129, 0.3);
+            --border: rgba(255, 255, 255, 0.08);
             --accent: #00d2ff;
             --purple: #9d50bb;
             --pink: #6e48aa;
-            --success: #00f2fe;
             --text: #f1f5f9;
             --warning: #ff9800;
             --danger: #ff4b2b;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 400; /* Data defaults to Regular */
             background: radial-gradient(circle at top right, #1e293b, #0b0f1a);
             color: var(--text);
             padding: 15px;
@@ -28,211 +30,248 @@
             min-height: 100vh;
         }
 
-        .header-bar { background: linear-gradient(90deg, #312e81, #1e1b4b); padding: 12px 20px; margin: -15px -15px 25px -15px; font-size: 0.85rem; color: #94a3b8; }
+        /* Bold Highlights for Structural Elements */
+        h2, h3, .header-bar, .nav-btn, .btn-glass-add, th, .pill.active, #table-month-indicator, .stat-item small {
+            font-weight: 600; 
+        }
 
-        .nav { display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 5px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .nav-btn { background: none; border: none; color: #64748b; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; padding: 10px 5px; transition: 0.3s; white-space: nowrap; }
+        .header-bar { 
+            background: var(--glass-header); 
+            backdrop-filter: blur(10px);
+            padding: 12px 20px; 
+            margin: -15px -15px 25px -15px; 
+            font-size: 0.85rem; 
+            color: #94a3b8; 
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav { display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 5px; overflow-x: auto; }
+        .nav-btn { 
+            background: none; border: none; color: #64748b; cursor: pointer; 
+            font-size: 0.9rem; display: flex; align-items: center; gap: 8px; 
+            padding: 10px 5px; transition: 0.3s; white-space: nowrap; 
+            font-family: 'Kanit', sans-serif;
+        }
         .nav-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-
-        .quick-add { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+        .glass-card { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--border); 
+            border-radius: 24px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); 
+        }
 
         .btn-glass-add { 
-            background: linear-gradient(45deg, var(--purple), var(--pink)); 
-            color: white; border: none; padding: 14px; border-radius: 12px; 
-            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem;
+            background: linear-gradient(45deg, rgba(157, 80, 187, 0.6), rgba(110, 72, 170, 0.6)); 
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; padding: 14px; border-radius: 16px; 
+            cursor: pointer; width: 100%; font-size: 1rem;
+            font-family: 'Kanit', sans-serif;
+            transition: all 0.3s ease;
         }
-        .btn-glass-add:active { transform: scale(0.98); opacity: 0.9; }
 
         input, select { 
-            background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); 
-            color: white; padding: 14px; border-radius: 12px; font-size: 1rem;
-            width: 100%; box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.2); 
+            border: 1px solid var(--border); 
+            color: white; padding: 14px; border-radius: 14px; font-size: 1rem;
+            width: 100%; box-sizing: border-box; margin-bottom: 12px;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 400;
         }
 
-        .month-pills { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
-        .pill { background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); padding: 8px 18px; border-radius: 30px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
-        .pill.active { background: linear-gradient(45deg, var(--purple), var(--pink)); font-weight: bold; }
+        .month-pills { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 10px; }
+        .pill { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid var(--border); 
+            padding: 8px 18px; border-radius: 30px; font-size: 0.8rem; 
+            cursor: pointer; white-space: nowrap; color: #94a3b8;
+            font-weight: 400;
+        }
+        .pill.active { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: white; }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .stat-item { text-align: center; background: rgba(30, 41, 59, 0.4); padding: 15px; border-radius: 18px; border: 1px solid var(--border); }
-        .stat-item h2 { margin: 8px 0 2px 0; font-size: 1.2rem; color: var(--accent); }
-        .stat-item small { font-size: 0.7rem; color: #94a3b8; }
+        .stat-item { 
+            text-align: center; background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(10px); padding: 15px; border-radius: 20px; border: 1px solid var(--border); 
+        }
+        .stat-item h2 { margin: 8px 0 2px 0; font-size: 1.3rem; color: var(--accent); }
 
-        .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        th { text-align: left; padding: 12px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 12px; border-top: 1px solid var(--border); font-size: 0.85rem; }
+        th { text-align: left; padding: 14px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 14px; border-top: 1px solid var(--border); font-size: 0.85rem; color: #cbd5e1; font-weight: 400; }
 
         .section { display: none; }
         .section.active { display: block; }
 
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e293b; padding: 25px; border-radius: 20px; z-index: 100; border: 1px solid var(--accent); width: 85%; max-width: 380px; }
+        .modal { 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(25px);
+            padding: 30px; border-radius: 28px; z-index: 100; 
+            border: 1px solid var(--border); width: 85%; max-width: 380px; 
+        }
         .modal.active { display: block; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 99; }
         .overlay.active { display: block; }
-        
-        .action-btns { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="header-bar" id="current-date">Sunday, April 5, 2026</div>
+    <div class="header-bar" id="current-date">Loading...</div>
 
     <div class="nav">
-        <button class="nav-btn active" onclick="showSection('dashboard', event)">📊 Dashboard</button>
-        <button class="nav-btn" onclick="showSection('salary', event)">💰 Salary</button>
-        <button class="nav-btn" onclick="showSection('installments', event)">💳 Installments</button>
-        <button class="nav-btn" onclick="showSection('savings', event)">📈 Savings</button>
-        <button class="nav-btn" onclick="showSection('daily', event)">📄 Daily</button>
+        <button class="nav-btn active" id="btn-dashboard" onclick="showSection('dashboard')">📊 Dashboard</button>
+        <button class="nav-btn" id="btn-salary" onclick="showSection('salary')">💰 Salary</button>
+        <button class="nav-btn" id="btn-installments" onclick="showSection('installments')">💳 Installments</button>
+        <button class="nav-btn" id="btn-savings" onclick="showSection('savings')">📈 Savings</button>
+        <button class="nav-btn" id="btn-daily" onclick="showSection('daily')">📄 Daily</button>
     </div>
 
     <div id="dashboard" class="section active">
         <div class="glass-card">
-            <div style="font-weight:bold; font-size: 0.9rem;"><span style="color:var(--warning)">⚡</span> Quick Add Expense</div>
-            <div class="quick-add">
-                <input type="text" id="dash-item" placeholder="Item (e.g. WiFi, Water)">
-                <input type="number" id="dash-amt" placeholder="Amount (₱)">
-                <select id="dash-cat">
-                    <option value="Others">Select Category</option>
-                    <option value="Food & Diet">Food & Diet</option>
-                    <option value="Household Bills">Household Bills</option>
-                    <option value="Home Credit">Home Credit</option>
-                    <option value="GGives">GGives</option>
-                </select>
-                <button class="btn-glass-add" onclick="submitEntry('Daily Tracker', ['dash-item','dash-amt','dash-cat'])">Add Transaction</button>
-            </div>
+            <div style="font-weight:600; font-size: 0.95rem; margin-bottom: 15px;"><span style="color:var(--warning)">⚡</span> Quick Add</div>
+            <input type="text" id="dash-item" placeholder="Item">
+            <input type="number" id="dash-amt" placeholder="Amount">
+            <select id="dash-cat" class="category-dropdown"></select>
+            <button class="btn-glass-add" onclick="submitEntry('Daily Tracker', ['dash-item','dash-amt','dash-cat'])">Add Transaction</button>
         </div>
         <div class="month-pills" id="month-pills"></div>
         <div class="stats-grid">
-            <div class="stat-item"><h2 id="total-spent">₱0</h2><small id="stat-month-label">Spent</small></div>
+            <div class="stat-item"><h2 id="total-salary">₱0</h2><small>Total Salary</small></div>
+            <div class="stat-item"><h2 id="total-spent">₱0</h2><small>Spent</small></div>
             <div class="stat-item"><h2 id="total-trans">0</h2><small>Count</small></div>
             <div class="stat-item"><h2 id="daily-avg">₱0</h2><small>Daily Avg</small></div>
-            <div class="stat-item"><h2 id="top-cat">-</h2><small>Top Category</small></div>
+            <div class="stat-item" style="grid-column: span 2;"><h2 id="top-cat">-</h2><small>Installments</small></div>
         </div>
+        <div class="glass-card"><div style="height:220px;"><canvas id="monthlyChart"></canvas></div></div>
+    </div>
+
+    <div id="daily" class="section">
+        <button class="btn-glass-add" style="margin-bottom:20px;" onclick="openModal('expenseModal')">+ Add Expense</button>
         <div class="glass-card">
-            <h3 style="margin:0 0 15px 0; color:#94a3b8; font-size:0.8rem; text-transform:uppercase;">Spending Trend</h3>
-            <div style="height:220px;"><canvas id="monthlyChart"></canvas></div>
+            <div id="table-month-indicator" style="padding-bottom: 15px; color: var(--accent);">Viewing: ...</div>
+            <div class="table-wrap"><table id="expenseTable"><thead><tr><th>ID</th><th>Item</th><th>Amount</th><th>Date</th><th>Category</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
         </div>
     </div>
 
     <div id="salary" class="section">
-        <button class="btn-glass-add" style="width:100%; margin-bottom:20px;" onclick="openModal('salaryModal')">+ Add Salary</button>
-        <div class="glass-card table-wrap"><table id="salaryTable"><thead><tr><th>Source</th><th>Amount</th><th>Date</th><th>Month</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+        <button class="btn-glass-add" style="margin-bottom:20px;" onclick="openModal('salaryModal')">+ Add Salary</button>
+        <div class="glass-card table-wrap"><table id="salaryTable"><thead><tr><th>ID</th><th>Source</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div id="installments" class="section">
-        <button class="btn-glass-add" style="width:100%; margin-bottom:20px;" onclick="openModal('instModal')">+ New Plan</button>
-        <div class="glass-card table-wrap"><table id="instTable"><thead><tr><th>Product</th><th>Total</th><th>Monthly</th><th>Rem.</th><th>Due</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+        <button class="btn-glass-add" style="margin-bottom:20px;" onclick="openModal('instModal')">+ New Plan</button>
+        <div class="glass-card table-wrap"><table id="instTable"><thead><tr><th>ID</th><th>Product</th><th>Total</th><th>Monthly</th><th>Rem.</th><th>Due</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div id="savings" class="section">
-        <button class="btn-glass-add" style="width:100%; margin-bottom:20px;" onclick="openModal('savingsModal')">+ New Goal</button>
-        <div class="glass-card table-wrap"><table id="savingsTable"><thead><tr><th>Goal</th><th>Target</th><th>Current</th><th>Updated</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <div id="daily" class="section">
-        <button class="btn-glass-add" style="width:100%; margin-bottom:20px;" onclick="openModal('expenseModal')">+ Add Expense</button>
-        <div class="glass-card table-wrap"><table id="expenseTable"><thead><tr><th>Item</th><th>Amount</th><th>Date</th><th>Category</th><th>Month</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+        <button class="btn-glass-add" style="margin-bottom:20px;" onclick="openModal('savingsModal')">+ New Goal</button>
+        <div class="glass-card table-wrap"><table id="savingsTable"><thead><tr><th>ID</th><th>Goal</th><th>Target</th><th>Current</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
-    
-    <div id="expenseModal" class="modal">
-        <h3>Add Expense</h3>
-        <input type="text" id="exp-item" placeholder="Item">
-        <input type="number" id="exp-amt" placeholder="Amount">
-        <select id="exp-cat">
-            <option value="Food & Diet">Food & Diet</option>
-            <option value="Household Bills">Household Bills</option>
-            <option value="Home Credit">Home Credit</option>
-            <option value="GGives">GGives</option>
-            <option value="Others">Others</option>
-        </select>
-        <button class="btn-glass-add" style="width:100%; margin-top:10px;" onclick="submitEntry('Daily Tracker', ['exp-item','exp-amt','exp-cat'])">Save</button>
-    </div>
-
-    <div id="salaryModal" class="modal">
-        <h3>Add Salary</h3>
-        <input type="text" id="sal-source" placeholder="Source">
-        <input type="number" id="sal-amt" placeholder="Amount">
-        <button class="btn-glass-add" style="width:100%; margin-top:10px;" onclick="submitEntry('Salary', ['sal-source','sal-amt'])">Save</button>
-    </div>
-
-    <div id="instModal" class="modal">
-        <h3>New Plan</h3>
-        <input type="text" id="ins-prod" placeholder="Product">
-        <input type="number" id="ins-total" placeholder="Total">
-        <input type="number" id="ins-month" placeholder="Monthly">
-        <input type="number" id="ins-rem" placeholder="Remaining">
-        <input type="text" id="ins-due" placeholder="Due Date">
-        <button class="btn-glass-add" style="width:100%; margin-top:10px;" onclick="submitEntry('Installments', ['ins-prod','ins-total','ins-month','ins-rem','ins-due'])">Save</button>
-    </div>
-
-    <div id="savingsModal" class="modal">
-        <h3>New Savings Goal</h3>
-        <input type="text" id="sav-goal" placeholder="Goal Name">
-        <input type="number" id="sav-target" placeholder="Target">
-        <input type="number" id="sav-current" placeholder="Current">
-        <button class="btn-glass-add" style="width:100%; margin-top:10px;" onclick="submitEntry('Savings', ['sav-goal','sav-target','sav-current'])">Save</button>
-    </div>
+    <div id="expenseModal" class="modal"><h3>Add Expense</h3><input type="text" id="exp-item" placeholder="Item"><input type="number" id="exp-amt" placeholder="Amount"><select id="exp-cat" class="category-dropdown"></select><button class="btn-glass-add" onclick="submitEntry('Daily Tracker', ['exp-item','exp-amt','exp-cat'])">Save</button></div>
+    <div id="salaryModal" class="modal"><h3>Add Salary</h3><input type="text" id="sal-source" placeholder="Source"><input type="number" id="sal-amt" placeholder="Amount"><button class="btn-glass-add" onclick="submitEntry('Salary', ['sal-source','sal-amt'])">Save</button></div>
+    <div id="instModal" class="modal"><h3>New Plan</h3><input type="text" id="ins-prod" placeholder="Product"><input type="number" id="ins-total" placeholder="Total"><input type="number" id="ins-month" placeholder="Monthly"><input type="number" id="ins-rem" placeholder="Remaining"><input type="text" id="ins-due" placeholder="Due Date"><button class="btn-glass-add" onclick="submitEntry('Installments', ['ins-prod','ins-total','ins-month','ins-rem','ins-due'])">Save Plan</button></div>
+    <div id="savingsModal" class="modal"><h3>New Goal</h3><input type="text" id="sav-goal" placeholder="Goal"><input type="number" id="sav-target" placeholder="Target"><input type="number" id="sav-current" placeholder="Current"><button class="btn-glass-add" onclick="submitEntry('Savings', ['sav-goal','sav-target','sav-current'])">Save Goal</button></div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzVt4kCdu8WEL9Il72vS2dZ1ay3Oq7eQE2nfPrq3YI2OOwuDVoTZqNhQ0WDfBMuTw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdb_CQHcB9RI8tW6XQHlHQT7GGp_9FkAHzlwCg1Vhw1K7PvUOdbyA8lhFn-fpoIaQ/exec';
         let state = { expenses: [], salary: [], savings: [], installments: [] };
+        // FORCE REAL-TIME MONTH
         let selectedMonth = new Date().toLocaleString('default', { month: 'long' });
         let myChart = null;
 
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('btn-' + id).classList.add('active');
+        }
+
         async function init() {
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-            });
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=dashboard`);
-                state = await res.json();
+                const raw = await res.json();
+                state = { expenses: raw.expenses || [], salary: raw.salary || [], installments: raw.installments || [], savings: raw.savings || [] };
+                updateDropdowns();
                 renderPills();
                 updateDashboardUI();
                 renderAll();
             } catch (e) { console.error("Sync failed", e); }
         }
 
-        function renderPills() {
-            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
-            const container = document.getElementById('month-pills');
-            container.innerHTML = months.map(m => {
-                const count = state.expenses.filter(e => e.values[4] === m).length;
-                if (count === 0 && m !== currentMonthName && m !== selectedMonth) return ''; 
-                return `<div class="pill ${m === selectedMonth ? 'active' : ''}" onclick="changeMonth('${m}')">
-                    ${m} <span>${count}</span>
-                </div>`;
+        function renderTable(tableId, data, sheetName) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            tbody.innerHTML = data.map(item => {
+                if(!item.id || item.values[0] === 'Product') return '';
+                const cells = item.values.map(v => `<td>${(typeof v === 'string' && v.includes('T')) ? v.split('T')[0] : v || ''}</td>`).join('');
+                return `<tr><td>${item.id}</td>${cells}<td><button onclick="deleteEntry('${sheetName}', '${item.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:1.1rem;">❌</button></td></tr>`;
             }).join('');
         }
 
-        function changeMonth(m) { selectedMonth = m; renderPills(); updateDashboardUI(); }
+        function renderPills() {
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const container = document.getElementById('month-pills');
+            container.innerHTML = months.map(m => {
+                const count = state.expenses.filter(e => e.values[4] === m).length;
+                if (count === 0 && m !== selectedMonth) return ''; 
+                return `<div class="pill ${m === selectedMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${m} (${count})</div>`;
+            }).join('');
+        }
+
+        function changeMonth(m) { selectedMonth = m; renderPills(); updateDashboardUI(); renderAll(); }
 
         function updateDashboardUI() {
-            let total = 0, trans = 0;
-            let catTotals = {};
-            state.expenses.forEach(e => {
-                if (e.values[4] === selectedMonth) {
-                    const amt = parseFloat(e.values[1]) || 0;
-                    total += amt;
-                    trans++;
-                    const cat = e.values[3];
-                    catTotals[cat] = (catTotals[cat] || 0) + amt;
-                }
-            });
-            document.getElementById('total-spent').innerText = `₱${total.toLocaleString()}`;
+            let totalSpent = 0, trans = 0, totalSalary = 0;
+            state.salary.forEach(s => { if(new Date(s.values[2]).toLocaleString('default', { month: 'long' }) === selectedMonth) totalSalary += parseFloat(s.values[1]) || 0; });
+            state.expenses.forEach(e => { if (e.values[4] === selectedMonth) { totalSpent += parseFloat(e.values[1]) || 0; trans++; } });
+            document.getElementById('total-salary').innerText = `₱${totalSalary.toLocaleString()}`;
+            document.getElementById('total-spent').innerText = `₱${totalSpent.toLocaleString()}`;
             document.getElementById('total-trans').innerText = trans;
-            document.getElementById('daily-avg').innerText = `₱${(trans > 0 ? (total/30).toFixed(0) : 0).toLocaleString()}`;
-            document.getElementById('stat-month-label').innerText = `Spent (${selectedMonth})`;
-            const top = Object.entries(catTotals).sort((a,b) => b[1] - a[1])[0];
-            document.getElementById('top-cat').innerText = top ? top[0] : '-';
+            document.getElementById('daily-avg').innerText = `₱${(totalSpent/30).toFixed(0)}`;
             renderChart();
         }
 
+        function renderAll() {
+            const filteredExpenses = state.expenses.filter(e => e.values[4] === selectedMonth);
+            document.getElementById('table-month-indicator').innerText = `Viewing: ${selectedMonth}`;
+            renderTable('expenseTable', filteredExpenses, 'Daily Tracker');
+            renderTable('salaryTable', state.salary, 'Salary');
+            renderTable('savingsTable', state.savings, 'Savings');
+            renderTable('instTable', state.installments, 'Installments');
+        }
+
+        // Rest of support functions (submitEntry, deleteEntry, etc) same as previous
+        async function submitEntry(sheet, fields) {
+            const btn = event.target; btn.innerText = "Saving...";
+            const data = fields.map(id => document.getElementById(id).value);
+            const now = new Date();
+            let finalData = [];
+            if (sheet === 'Daily Tracker') finalData = [data[0], data[1], now.toISOString().split('T')[0], data[2], now.toLocaleString('default', { month: 'long' })];
+            else if (sheet === 'Salary') finalData = [data[0], data[1], now.toLocaleDateString()];
+            else if (sheet === 'Savings') finalData = [data[0], data[1], data[2], now.toLocaleDateString()];
+            else finalData = data;
+            await fetch(`${SCRIPT_URL}?action=addEntry&sheet=${sheet}&data=${encodeURIComponent(JSON.stringify(finalData))}`);
+            location.reload();
+        }
+
+        async function deleteEntry(sheet, id) { if (confirm('Delete?')) { await fetch(`${SCRIPT_URL}?action=deleteEntry&sheet=${sheet}&id=${id}`); location.reload(); } }
+        function openModal(id) { document.getElementById(id).classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+        function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
+        function updateDropdowns() {
+            const dropdowns = document.querySelectorAll('.category-dropdown');
+            const defaults = ["Food & Diet", "Household Bills", "Others"];
+            const instList = state.installments.map(i => i.values[0]).filter(n => n && n !== 'Product');
+            let html = `<option value="">Select Category</option>`;
+            defaults.forEach(d => html += `<option value="${d}">${d}</option>`);
+            instList.forEach(p => html += `<option value="${p}">${p}</option>`);
+            dropdowns.forEach(d => d.innerHTML = html);
+        }
         function renderChart() {
             const ctx = document.getElementById('monthlyChart').getContext('2d');
             const months = ["January", "February", "March", "April", "May", "June"];
@@ -240,67 +279,10 @@
             if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'bar',
-                data: { labels: months, datasets: [{ label: 'Spent', data: data, backgroundColor: months.map(m => m === selectedMonth ? '#9d50bb' : 'rgba(255,255,255,0.1)'), borderRadius: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } } }, plugins: { legend: { display: false } } }
+                data: { labels: months, datasets: [{ data: data, backgroundColor: months.map(m => m === selectedMonth ? '#9d50bb' : 'rgba(255,255,255,0.05)'), borderRadius: 10 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Kanit' } } } }, plugins: { legend: { display: false } } }
             });
         }
-
-        function renderAll() {
-            renderTable('expenseTable', state.expenses, 'Daily Tracker');
-            renderTable('salaryTable', state.salary, 'Salary');
-            renderTable('savingsTable', state.savings, 'Savings');
-            renderTable('instTable', state.installments, 'Installments');
-        }
-
-        function renderTable(tableId, data, sheetName) {
-            const tbody = document.querySelector(`#${tableId} tbody`);
-            tbody.innerHTML = data.map(item => {
-                const rowCells = item.values.map(v => {
-                    if (typeof v === 'string' && v.includes('T') && v.includes('Z')) return `<td>${v.split('T')[0]}</td>`;
-                    return `<td>${v || ''}</td>`;
-                }).join('');
-                return `<tr>${rowCells}<td class="action-btns">
-                    <button onclick='editEntry("${sheetName}", ${item.id}, ${JSON.stringify(item.values)})' style="background:none; border:none; cursor:pointer;">✏️</button>
-                    <button onclick="deleteEntry('${sheetName}', ${item.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;">🗑️</button>
-                </td></tr>`;
-            }).join('');
-        }
-
-        async function submitEntry(sheet, fields) {
-            const btn = event.target;
-            btn.innerText = "Saving...";
-            btn.disabled = true;
-            const data = fields.map(id => document.getElementById(id).value);
-            const now = new Date();
-            let finalData = [];
-            if (sheet === 'Daily Tracker') finalData = [data[0], data[1], now.toISOString().split('T')[0], data[2], now.toLocaleString('default', { month: 'long' })];
-            else if (sheet === 'Salary') finalData = [data[0], data[1], now.toISOString().split('T')[0], now.toLocaleString('default', { month: 'long' })];
-            else if (sheet === 'Savings') finalData = [data[0], data[1], data[2], now.toLocaleDateString()];
-            else finalData = data;
-            await fetch(`${SCRIPT_URL}?action=addEntry&sheet=${sheet}&data=${encodeURIComponent(JSON.stringify(finalData))}`);
-            location.reload();
-        }
-
-        async function editEntry(sheet, id, currentValues) {
-            let newValueRaw = prompt("Edit values (comma separated):", currentValues.join(', '));
-            if (newValueRaw) {
-                let newData = newValueRaw.split(',').map(s => s.trim());
-                if (sheet === 'Installments') {
-                    const monthly = parseFloat(newData[2]) || 0;
-                    let remaining = parseFloat(newData[3]) || 0;
-                    if (confirm(`Deduct payment of ₱${monthly} from remaining balance?`)) {
-                        newData[3] = (remaining - monthly).toString();
-                    }
-                }
-                await fetch(`${SCRIPT_URL}?action=updateEntry&sheet=${sheet}&id=${id}&data=${encodeURIComponent(JSON.stringify(newData))}`);
-                location.reload();
-            }
-        }
-
-        async function deleteEntry(sheet, id) { if (confirm('Delete?')) { await fetch(`${SCRIPT_URL}?action=deleteEntry&sheet=${sheet}&id=${id}`); location.reload(); } }
-        function showSection(id, e) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); if(e) e.target.classList.add('active'); }
-        function openModal(id) { document.getElementById(id).classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-        function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
         window.onload = init;
     </script>
 </body>
